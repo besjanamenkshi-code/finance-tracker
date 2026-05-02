@@ -3,76 +3,526 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Finance Tracker</title>
+  <title>Besjana Finance</title>
   <link rel="manifest" href="manifest.json" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #e8f4fd;
+      --income: #00c853;
+      --expense: #ff1744;
+      --savings: #2979ff;
+      --fun: #ff6d00;
+      --card-bg: #ffffff;
+      --text: #1a1a2e;
+      --muted: #8892b0;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background: #f0f2f5; color: #333; }
-    header { background: #6c63ff; color: white; padding: 20px; text-align: center; }
-    header h1 { font-size: 24px; }
-    .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-    .card { background: white; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .card h3 { font-size: 13px; color: #888; margin-bottom: 5px; }
-    .card p { font-size: 22px; font-weight: bold; }
-    .income p { color: #4caf50; }
-    .expense p { color: #f44336; }
-    .savings p { color: #2196f3; }
-    .fun p { color: #ff9800; }
-    .balance-bar { background: #6c63ff; color: white; text-align: center; padding: 15px; margin: 0 15px; border-radius: 12px; font-size: 20px; font-weight: bold; }
-    .form-section { background: white; margin: 15px; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .form-section h2 { margin-bottom: 15px; font-size: 18px; }
-    select, input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
-    button.add-btn { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
-    .transactions { margin: 15px; }
-    .transactions h2 { margin-bottom: 10px; }
-    .transaction-item { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
-    .transaction-item .info .type { font-size: 12px; color: white; padding: 3px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px; }
-    .income-tag { background: #4caf50; }
-    .expense-tag { background: #f44336; }
-    .savings-tag { background: #2196f3; }
-    .fun-tag { background: #ff9800; }
-    .transaction-item .info .desc { font-size: 14px; color: #555; }
-    .transaction-item .right .amount { font-size: 18px; font-weight: bold; }
-    .transaction-item .right .date { font-size: 11px; color: #aaa; text-align: right; }
-    .delete-btn { background: none; border: none; color: #f44336; font-size: 20px; cursor: pointer; margin-left: 10px; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* MONEY RAIN */
+    .money-rain {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .coin {
+      position: absolute;
+      top: -60px;
+      font-size: 22px;
+      animation: fall linear infinite;
+      opacity: 0.18;
+      user-select: none;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-60px) rotate(0deg); opacity: 0.18; }
+      90% { opacity: 0.18; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* HEADER */
+    header {
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(135deg, #1565c0, #42a5f5);
+      padding: 28px 20px 60px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '💸💰💎';
+      position: absolute;
+      font-size: 80px;
+      opacity: 0.07;
+      top: -10px;
+      right: -10px;
+      animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; left: 0; right: 0;
+      height: 60px;
+      background: var(--bg);
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: 900;
+      color: white;
+    }
+
+    header p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      margin-top: 4px;
+    }
+
+    /* BALANCE */
+    .balance-hero {
+      margin: -10px 16px 16px;
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(21,101,192,0.15);
+      position: relative;
+      z-index: 2;
+      animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .balance-hero .label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .balance-hero .amount {
+      font-size: 50px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #1565c0, #42a5f5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+      margin: 4px 0;
+    }
+
+    .balance-hero .sub {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    /* SUMMARY */
+    .summary {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 16px 16px;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      transition: transform 0.2s;
+    }
+
+    .card:active { transform: scale(0.97); }
+    .card .icon { font-size: 26px; margin-bottom: 6px; }
+    .card .clabel { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .card .val { font-size: 20px; font-weight: 900; margin-top: 4px; }
+    .card.income .val { color: var(--income); }
+    .card.expense .val { color: var(--expense); }
+    .card.savings .val { color: var(--savings); }
+    .card.fun .val { color: var(--fun); }
+
+    /* MOTIVATION */
+    .motivation {
+      position: relative;
+      z-index: 2;
+      margin: 0 16px 16px;
+      background: linear-gradient(135deg, #1565c0, #42a5f5);
+      border-radius: 20px;
+      padding: 14px 18px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 6px 20px rgba(21,101,192,0.25);
+      animation: fadeUp 0.5s ease 0.15s both;
+    }
+
+    .motivation .mot-icon { font-size: 28px; flex-shrink: 0; }
+    .motivation .mot-text strong { font-size: 14px; display: block; }
+    .motivation .mot-text span { font-size: 12px; opacity: 0.85; }
+
+    /* FORM */
+    .form-section {
+      position: relative;
+      z-index: 2;
+      background: white;
+      margin: 0 16px 16px;
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      animation: fadeUp 0.5s ease 0.2s both;
+    }
+
+    .form-section h2 { font-size: 18px; font-weight: 900; margin-bottom: 16px; }
+
+    .type-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .type-tab {
+      padding: 10px 4px;
+      border: 2px solid #eee;
+      border-radius: 14px;
+      background: #f8f9ff;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .type-tab span.emoji { font-size: 20px; }
+    .type-tab[data-type="income"].active { background: #e8fff0; border-color: var(--income); color: var(--income); }
+    .type-tab[data-type="expense"].active { background: #fff0f0; border-color: var(--expense); color: var(--expense); }
+    .type-tab[data-type="savings"].active { background: #f0f4ff; border-color: var(--savings); color: var(--savings); }
+    .type-tab[data-type="fun"].active { background: #fff5ee; border-color: var(--fun); color: var(--fun); }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .opt-btn {
+      padding: 10px 8px;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      background: #f8f9ff;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .opt-btn.selected-income { background: #e8fff0; border-color: var(--income); color: var(--income); }
+    .opt-btn.selected-expense { background: #fff0f0; border-color: var(--expense); color: var(--expense); }
+    .opt-btn.selected-savings { background: #f0f4ff; border-color: var(--savings); color: var(--savings); }
+    .opt-btn.selected-fun { background: #fff5ee; border-color: var(--fun); color: var(--fun); }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      background: #f8f9ff;
+      border: 2px solid #eef0f8;
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: #42a5f5; background: white; }
+    input::placeholder { color: #ccc; font-weight: 600; }
+
+    button.add-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #1565c0, #42a5f5);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 900;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 6px 20px rgba(21,101,192,0.3);
+    }
+
+    button.add-btn:active { transform: scale(0.98); }
+
+    /* TRANSACTIONS */
+    .transactions {
+      position: relative;
+      z-index: 2;
+      margin: 0 16px 32px;
+      animation: fadeUp 0.5s ease 0.3s both;
+    }
+
+    .transactions-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .transactions-header h2 { font-size: 18px; font-weight: 900; }
+    .transactions-header span { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+    .transaction-item {
+      background: white;
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .t-icon {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+
+    .t-icon.income { background: #e8fff0; }
+    .t-icon.expense { background: #fff0f0; }
+    .t-icon.savings { background: #f0f4ff; }
+    .t-icon.fun { background: #fff5ee; }
+
+    .t-info { flex: 1; min-width: 0; }
+    .t-info .cat { font-size: 14px; font-weight: 800; }
+    .t-info .date { font-size: 11px; color: #ccc; font-weight: 700; margin-top: 2px; }
+
+    .t-right .amount { font-size: 16px; font-weight: 900; }
+    .t-right .amount.income { color: var(--income); }
+    .t-right .amount.expense { color: var(--expense); }
+    .t-right .amount.savings { color: var(--savings); }
+    .t-right .amount.fun { color: var(--fun); }
+
+    .delete-btn {
+      background: #fff0f0; border: none; color: var(--expense);
+      font-size: 14px; cursor: pointer;
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.2s;
+    }
+
+    .delete-btn:active { transform: scale(0.9); }
+
+    .empty {
+      text-align: center; color: var(--muted);
+      padding: 40px 20px; font-size: 15px; font-weight: 700;
+      background: white; border-radius: 20px;
+    }
+
+    .empty .big { font-size: 40px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
+<!-- MONEY RAIN -->
+<div class="money-rain" id="moneyRain"></div>
+
 <header>
-  <h1>💰 Finance Tracker</h1>
+  <h1>💸 Besjana's Finance</h1>
+  <p>Your money, your rules ✨</p>
 </header>
 
-<div class="summary">
-  <div class="card income"><h3>💵 Income</h3><p id="income">0</p></div>
-  <div class="card expense"><h3>🛒 Expenses</h3><p id="expense">0</p></div>
-  <div class="card savings"><h3>🐷 Savings</h3><p id="savings">0</p></div>
-  <div class="card fun"><h3>🎉 Fun</h3><p id="fun">0</p></div>
+<div class="balance-hero">
+  <div class="label">Total Balance</div>
+  <div class="amount" id="balance">0.00 L</div>
+  <div class="sub" id="balance-sub">Start adding transactions!</div>
 </div>
 
-<div class="balance-bar">Balance: <span id="balance">0</span> L</div>
+<div class="summary">
+  <div class="card income"><div class="icon">💵</div><div class="clabel">Income</div><div class="val" id="income">0.00</div></div>
+  <div class="card expense"><div class="icon">🛒</div><div class="clabel">Expenses</div><div class="val" id="expense">0.00</div></div>
+  <div class="card savings"><div class="icon">🐷</div><div class="clabel">Savings</div><div class="val" id="savings">0.00</div></div>
+  <div class="card fun"><div class="icon">🎉</div><div class="clabel">Fun</div><div class="val" id="fun">0.00</div></div>
+</div>
+
+<div class="motivation" id="motivation">
+  <div class="mot-icon">🌟</div>
+  <div class="mot-text"><strong>Welcome back, Besjana!</strong><span>Track your money and reach your goals!</span></div>
+</div>
 
 <div class="form-section">
-  <h2>Add Transaction</h2>
-  <select id="type">
-    <option value="income">💵 Income</option>
-    <option value="expense">🛒 Expense</option>
-    <option value="savings">🐷 Savings</option>
-    <option value="fun">🎉 Fun</option>
-  </select>
-  <input type="text" id="category" placeholder="Category (e.g. Salary, Food...)" />
-  <input type="number" id="amount" placeholder="Amount (L)" />
-  <input type="text" id="description" placeholder="Description" />
-  <button class="add-btn" onclick="addTransaction()">+ Add</button>
+  <h2>➕ Add Transaction</h2>
+
+  <div class="type-tabs">
+    <button class="type-tab active" data-type="income" onclick="selectType('income')"><span class="emoji">💵</span>Income</button>
+    <button class="type-tab" data-type="expense" onclick="selectType('expense')"><span class="emoji">🛒</span>Expense</button>
+    <button class="type-tab" data-type="savings" onclick="selectType('savings')"><span class="emoji">🐷</span>Savings</button>
+    <button class="type-tab" data-type="fun" onclick="selectType('fun')"><span class="emoji">🎉</span>Fun</button>
+  </div>
+
+  <!-- Category options -->
+  <div id="cat-section">
+    <div class="field-label">Category</div>
+    <div class="options-grid" id="cat-options"></div>
+  </div>
+
+  <!-- Amount -->
+  <div class="field-label">Amount (L)</div>
+  <div class="options-grid" id="amount-options"></div>
+  <input type="number" id="amount" placeholder="Or type custom amount..." />
+
+  <button class="add-btn" onclick="addTransaction()">+ Add Transaction</button>
 </div>
 
 <div class="transactions">
-  <h2>Transactions</h2>
+  <div class="transactions-header">
+    <h2>📋 History</h2>
+    <span id="count">0 transactions</span>
+  </div>
   <div id="transaction-list"></div>
 </div>
 
 <script>
   const API = '/api/transactions';
+  let selectedType = 'income';
+  let selectedCategory = '';
+
+  const categories = {
+    income: ["👨‍👧 Father's money", "👧 Sister's money", "💼 My big girl work", "✏️ Else"],
+    expense: ["🍕 Food", "👗 Clothes", "📦 Supplies", "✏️ Else"],
+    savings: [],
+    fun: ["🍰 Cheat Day", "👯 Friends Day", "🚌 Going home", "✏️ Else"]
+  };
+
+  const quickAmounts = [500, 1000, 2000, 5000];
+
+  const typeEmojis = { income: '💵', expense: '🛒', savings: '🐷', fun: '🎉' };
+
+  function renderCategories() {
+    const section = document.getElementById('cat-section');
+    const opts = document.getElementById('cat-options');
+    const cats = categories[selectedType];
+
+    if (cats.length === 0) {
+      section.style.display = 'none';
+      selectedCategory = 'Savings';
+      return;
+    }
+
+    section.style.display = 'block';
+    selectedCategory = '';
+    opts.innerHTML = '';
+    cats.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = cat;
+      btn.onclick = () => {
+        document.querySelectorAll('#cat-options .opt-btn').forEach(b => b.classList.remove(`selected-${selectedType}`));
+        btn.classList.add(`selected-${selectedType}`);
+        selectedCategory = cat;
+      };
+      opts.appendChild(btn);
+    });
+  }
+
+  function renderAmounts() {
+    const opts = document.getElementById('amount-options');
+    opts.innerHTML = '';
+    quickAmounts.forEach(amt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = `${amt} L`;
+      btn.onclick = () => {
+        document.querySelectorAll('#amount-options .opt-btn').forEach(b => b.classList.remove(`selected-${selectedType}`));
+        btn.classList.add(`selected-${selectedType}`);
+        document.getElementById('amount').value = amt;
+      };
+      opts.appendChild(btn);
+    });
+  }
+
+  function selectType(type) {
+    selectedType = type;
+    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`[data-type="${type}"]`).classList.add('active');
+    renderCategories();
+    renderAmounts();
+  }
+
+  function updateMotivation(summary) {
+    const mot = document.getElementById('motivation');
+    const icon = mot.querySelector('.mot-icon');
+    const text = mot.querySelector('.mot-text');
+    let msg, emoji;
+    if (summary.savings > summary.expense) { msg = "You're saving more than spending! 🔥"; emoji = '🐷'; }
+    else if (summary.expense > summary.income * 0.7) { msg = "Watch those expenses, Besjana! 👀"; emoji = '⚠️'; }
+    else if (summary.balance > 0) { msg = "Balance is positive! Keep it up! 💪"; emoji = '🚀'; }
+    else { msg = "Track your money and reach your goals!"; emoji = '🌟'; }
+    icon.textContent = emoji;
+    text.innerHTML = `<strong>Hey Besjana! ${emoji}</strong><span>${msg}</span>`;
+  }
 
   async function loadSummary() {
     const res = await fetch(API + '/summary');
@@ -81,25 +531,33 @@
     document.getElementById('expense').textContent = data.expense.toFixed(2);
     document.getElementById('savings').textContent = data.savings.toFixed(2);
     document.getElementById('fun').textContent = data.fun.toFixed(2);
-    document.getElementById('balance').textContent = data.balance.toFixed(2);
+    document.getElementById('balance').textContent = data.balance.toFixed(2) + ' L';
+    document.getElementById('balance-sub').textContent = data.balance > 0 ? '🟢 You\'re doing great!' : data.balance < 0 ? '🔴 Watch your spending!' : 'Start adding transactions!';
+    updateMotivation(data);
   }
 
   async function loadTransactions() {
     const res = await fetch(API);
     const data = await res.json();
     const list = document.getElementById('transaction-list');
+    document.getElementById('count').textContent = `${data.length} transaction${data.length !== 1 ? 's' : ''}`;
     list.innerHTML = '';
+    if (data.length === 0) {
+      list.innerHTML = '<div class="empty"><div class="big">💸</div>No transactions yet!<br>Add your first one above!</div>';
+      return;
+    }
     data.reverse().forEach(t => {
-      const date = new Date(t.date).toLocaleDateString();
+      const date = new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      const sign = t.type === 'income' ? '+' : '-';
       list.innerHTML += `
         <div class="transaction-item">
-          <div class="info">
-            <span class="type ${t.type}-tag">${t.type}</span>
-            <div class="desc">${t.category} — ${t.description}</div>
-          </div>
-          <div class="right">
-            <div class="amount">${parseFloat(t.amount).toFixed(2)} L</div>
+          <div class="t-icon ${t.type}">${typeEmojis[t.type]}</div>
+          <div class="t-info">
+            <div class="cat">${t.category}</div>
             <div class="date">${date}</div>
+          </div>
+          <div class="t-right">
+            <div class="amount ${t.type}">${sign}${parseFloat(t.amount).toFixed(2)} L</div>
           </div>
           <button class="delete-btn" onclick="deleteTransaction('${t.id}')">🗑</button>
         </div>`;
@@ -107,32 +565,56 @@
   }
 
   async function addTransaction() {
-    const type = document.getElementById('type').value;
-    const category = document.getElementById('category').value;
     const amount = document.getElementById('amount').value;
-    const description = document.getElementById('description').value;
-    if (!category || !amount) return alert('Please fill all fields!');
+    if (!selectedCategory && selectedType !== 'savings') return alert('Please select a category!');
+    if (!amount) return alert('Please enter an amount!');
+    const btn = document.querySelector('.add-btn');
+    btn.textContent = '✓ Added!';
+    btn.style.background = 'linear-gradient(135deg, #00c853, #00e676)';
     await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, category, amount, description })
+      body: JSON.stringify({ type: selectedType, category: selectedCategory || 'Savings', amount, description: '' })
     });
-    document.getElementById('category').value = '';
     document.getElementById('amount').value = '';
-    document.getElementById('description').value = '';
+    document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove(`selected-${selectedType}`));
+    selectedCategory = selectedType === 'savings' ? 'Savings' : '';
+    setTimeout(() => {
+      btn.textContent = '+ Add Transaction';
+      btn.style.background = 'linear-gradient(135deg, #1565c0, #42a5f5)';
+    }, 1500);
     loadSummary();
     loadTransactions();
   }
 
   async function deleteTransaction(id) {
+    if (!confirm('Delete this transaction?')) return;
     await fetch(API + '/' + id, { method: 'DELETE' });
     loadSummary();
     loadTransactions();
   }
 
+  // MONEY RAIN
+  function createMoneyRain() {
+    const container = document.getElementById('moneyRain');
+    const symbols = ['💵', '💰', '🪙', '💎', '✨', '⭐'];
+    for (let i = 0; i < 18; i++) {
+      const coin = document.createElement('div');
+      coin.className = 'coin';
+      coin.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      coin.style.left = Math.random() * 100 + '%';
+      coin.style.animationDuration = (Math.random() * 8 + 6) + 's';
+      coin.style.animationDelay = (Math.random() * 8) + 's';
+      coin.style.fontSize = (Math.random() * 16 + 14) + 'px';
+      container.appendChild(coin);
+    }
+  }
+
+  createMoneyRain();
+  renderCategories();
+  renderAmounts();
   loadSummary();
   loadTransactions();
 </script>
-
 </body>
 </html>
