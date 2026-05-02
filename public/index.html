@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Besjana Finance</title>
   <link rel="manifest" href="manifest.json" />
+  <meta property="og:title" content="Besjana's Finance Tracker" />
+  <meta property="og:description" content="Track your income, expenses, savings and fun money!" />
+  <meta property="og:image" content="https://em-content.zobj.net/source/apple/391/money-bag_1f4b0.png" />
+  <meta property="og:url" content="https://besjana-finance.onrender.com" />
+  <link rel="icon" href="https://em-content.zobj.net/source/apple/391/money-bag_1f4b0.png" type="image/png" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -457,20 +462,17 @@
   };
 
   const quickAmounts = [500, 1000, 2000, 5000];
-
   const typeEmojis = { income: '💵', expense: '🛒', savings: '🐷', fun: '🎉' };
 
   function renderCategories() {
     const section = document.getElementById('cat-section');
     const opts = document.getElementById('cat-options');
     const cats = categories[selectedType];
-
     if (cats.length === 0) {
       section.style.display = 'none';
       selectedCategory = 'Savings';
       return;
     }
-
     section.style.display = 'block';
     selectedCategory = '';
     opts.innerHTML = '';
@@ -594,7 +596,6 @@
     loadTransactions();
   }
 
-  // MONEY RAIN
   function createMoneyRain() {
     const container = document.getElementById('moneyRain');
     const symbols = ['💵', '💰', '🪙', '💎', '✨', '⭐'];
